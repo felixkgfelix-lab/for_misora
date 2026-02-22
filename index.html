@@ -6,7 +6,7 @@
     <title>For Misora</title>
     <style>
         body {
-            background: url('moon.jpg') no-repeat center center fixed;
+            background: #050505 url('moon.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #e0e0e0;
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -15,23 +15,41 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            overflow-x: hidden;
+            overflow: hidden; /* Чтобы снег не создавал прокрутку */
+        }
+
+        /* Эффект падающего снега */
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: white;
+            user-select: none;
+            z-index: 1;
+            pointer-events: none;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(105vh); }
         }
 
         .glass-panel {
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.75);
             padding: 40px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px);
+            border-radius: 25px;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             text-align: center;
-            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
             width: 85%;
             max-width: 600px;
+            z-index: 10;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .moon-icon {
-            font-size: 3rem;
-            filter: drop-shadow(0 0 15px #fff);
+            font-size: 3.5rem;
+            filter: drop-shadow(0 0 20px #fff);
             margin-bottom: 20px;
             display: block;
         }
@@ -42,43 +60,51 @@
         .input-group { margin: 25px 0; }
         
         input {
-            padding: 12px;
-            border-radius: 8px;
-            border: 1px solid #444;
-            background: #1a1e26;
+            padding: 15px;
+            border-radius: 12px;
+            border: 1px solid #555;
+            background: rgba(26, 30, 38, 0.8);
             color: white;
             text-align: center;
-            width: 220px;
+            width: 250px;
+            font-size: 1rem;
+            outline: none;
         }
 
         button {
-            padding: 12px 25px;
-            background: #ff4b2b;
+            padding: 15px 30px;
+            background: linear-gradient(45deg, #ff4b2b, #ff416c);
             border: none;
             color: white;
-            border-radius: 8px;
+            border-radius: 12px;
             cursor: pointer;
             font-weight: bold;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
         }
+
+        button:hover { transform: scale(1.05); }
 
         #content {
             white-space: pre-wrap;
             line-height: 2.2;
-            font-size: 1.15rem;
+            font-size: 1.1rem;
             text-align: left;
+            opacity: 0;
+            transition: opacity 2s;
         }
 
         .butterfly {
             position: fixed;
-            font-size: 2.5rem;
+            font-size: 2rem;
             pointer-events: none;
-            animation: fly 4s linear forwards;
+            animation: fly 5s linear forwards;
             z-index: 100;
         }
 
         @keyframes fly {
-            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
-            100% { transform: translate(var(--x), var(--y)) rotate(360deg); opacity: 0; }
+            0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) rotate(720deg) scale(0); opacity: 0; }
         }
 
         #final-heart {
@@ -90,23 +116,27 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.1); }
-            100% { transform: scale(1); }
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.2); opacity: 1; }
         }
 
-        .timer { font-size: 1.6rem; color: #ff4b2b; margin-top: 15px; font-weight: bold; }
+        .timer { font-size: 1.5rem; color: #ff4b2b; margin-top: 15px; font-weight: 300; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
+    <audio id="bgMusic" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="glass-panel">
         <div id="lock-screen">
             <span class="moon-icon">🌕</span>
-            <h2>3月23日までまだ時間がある</h2>
+            <h2 style="font-weight: 300;">3月23日まであと...</h2>
             <div id="countdown" class="timer"></div>
             <div class="input-group">
                 <input type="password" id="passwordInput" placeholder="合言葉を入力してください">
+                <br><br>
                 <button onclick="checkAccess()">開ける</button>
             </div>
         </div>
@@ -118,9 +148,25 @@
     </div>
 
     <script>
+        // Эффект снега
+        function createSnow() {
+            const container = document.body;
+            for (let i = 0; i < 50; i++) {
+                const flake = document.createElement('div');
+                flake.className = 'snowflake';
+                flake.innerHTML = '•';
+                flake.style.left = Math.random() * 100 + 'vw';
+                flake.style.opacity = Math.random();
+                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
+                flake.style.animationDuration = (Math.random() * 10 + 5) + 's';
+                flake.style.animationDelay = Math.random() * 5 + 's';
+                container.appendChild(flake);
+            }
+        }
+        createSnow();
+
         const targetDate = new Date('2026-03-23T00:00:00').getTime();
         const correctPassword = "大好きだよ"; 
-        const synth = window.speechSynthesis;
 
         function updateTimer() {
             const now = new Date().getTime();
@@ -133,7 +179,7 @@
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const secs = Math.floor((diff % (1000 * 60)) / 1000);
-            document.getElementById('countdown').innerHTML = `${days}日 ${hours}時間 ${mins}分 ${secs}秒`;
+            document.getElementById('countdown').innerHTML = `${days}d ${hours}h ${mins}m ${secs}s`;
             return false;
         }
         setInterval(updateTimer, 1000);
@@ -142,8 +188,15 @@
             const pass = document.getElementById('passwordInput').value;
             const isTimeReady = updateTimer();
             if (pass === correctPassword || isTimeReady) {
+                // Запуск музыки
+                const music = document.getElementById('bgMusic');
+                music.volume = 0.3;
+                music.play();
+
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('content-wrapper').style.display = 'block';
+                document.getElementById('content').style.opacity = '1';
+                
                 speakText(); 
                 startStory();
             } else {
@@ -154,15 +207,11 @@
         const text = `君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\nでも君は言ったね、僕は優しいって。\n君は言ったね、僕と一緒にいて幸せだって。\nそれでも君は言ったんだ、「友達のままでいよう」って\n\n眠れない、ずっと眠れない夜\n電話したいけど、たぶん我慢するよ\n君の元カレも今の彼も理解できない\nどうしてまだ君を愛しているのかもわからない\nまだ君を愛してる\n\nどこにいるの？元気なの？一言でもいいから書いて\n誰といるの？誰がそばにいるの？ただ元気でいて\nもうメッセージは送らないよ\n言いたかったことは全部言ったから\n手はスマホのそばにあるけれど...\n\n君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ\n\nどんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ\n\n君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\n頭から離れない人と、どうやって友達でいられるの？\nこの想いを忘れることはできない、とても苦しいんだ...\n本当の友達のように話そう\n「もしもし、元気？最近どう？」\n君がメッセージをくれてから、何も変わっていないよ\n\nまだ君を愛してる\nまだ君を愛してる\nこの想いを、心から消すことはできない。`;
 
         function speakText() {
+            const synth = window.speechSynthesis;
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'ja-JP'; 
-            utterance.rate = 0.9;  // Естественная скорость
-            utterance.pitch = 1.1; // Сделал голос чуть выше, чтобы он звучал моложе
-
-            const voices = synth.getVoices();
-            const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.toLowerCase().includes('male') || v.name.includes('Keita') || v.name.includes('Ichiro')));
-            if (maleVoice) utterance.voice = maleVoice;
-            
+            utterance.rate = 0.85; 
+            utterance.pitch = 1.0;
             synth.speak(utterance);
         }
 
@@ -177,31 +226,27 @@
                         createButterflies();
                     }
                     i++;
-                    setTimeout(typeWriter, 180); // Наша скорость
+                    setTimeout(typeWriter, 120); 
                 } else {
-                    document.getElementById('final-heart').style.display = 'block';
+                    document.getElementById('final-heart').style.display = 'inline-block';
                 }
             }
             typeWriter();
         }
 
         function createButterflies() {
-            for(let k=0; k<30; k++) { 
+            for(let k=0; k<25; k++) { 
                 const b = document.createElement('div');
                 b.className = 'butterfly';
                 b.innerHTML = '🦋';
-                b.style.left = Math.random() * 100 + 'vw';
-                b.style.top = Math.random() * 100 + 'vh';
-                b.style.setProperty('--x', (Math.random() * 600 - 300) + 'px');
-                b.style.setProperty('--y', (Math.random() * 600 - 300) + 'px');
+                b.style.left = '50%';
+                b.style.top = '50%';
+                b.style.setProperty('--x', (Math.random() * 800 - 400) + 'px');
+                b.style.setProperty('--y', (Math.random() * 800 - 400) + 'px');
                 document.body.appendChild(b);
-                setTimeout(() => b.remove(), 4000);
+                setTimeout(() => b.remove(), 5000);
             }
         }
-
-        window.speechSynthesis.onvoiceschanged = function() {
-            window.speechSynthesis.getVoices();
-        };
     </script>
 </body>
 </html>
