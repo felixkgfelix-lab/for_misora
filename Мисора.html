@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>For Misora</title>
+    <style>
+        body {
+            background: url('moon.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: #e0e0e0;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+        }
+
+        .glass-panel {
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
+            width: 85%;
+            max-width: 600px;
+        }
+
+        .moon-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 0 15px #fff);
+            margin-bottom: 20px;
+            display: block;
+        }
+
+        #lock-screen { display: block; }
+        #content-wrapper { display: none; }
+
+        .input-group { margin: 25px 0; }
+        
+        input {
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #444;
+            background: #1a1e26;
+            color: white;
+            text-align: center;
+            width: 220px;
+        }
+
+        button {
+            padding: 12px 25px;
+            background: #ff4b2b;
+            border: none;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #content {
+            white-space: pre-wrap;
+            line-height: 2.2;
+            font-size: 1.15rem;
+            text-align: left;
+        }
+
+        .butterfly {
+            position: fixed;
+            font-size: 2.5rem;
+            pointer-events: none;
+            animation: fly 4s linear forwards;
+            z-index: 100;
+        }
+
+        @keyframes fly {
+            0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) rotate(360deg); opacity: 0; }
+        }
+
+        #final-heart {
+            font-size: 5rem;
+            color: #ff4b2b;
+            display: none;
+            margin-top: 30px;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        .timer { font-size: 1.6rem; color: #ff4b2b; margin-top: 15px; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="glass-panel">
+        <div id="lock-screen">
+            <span class="moon-icon">🌕</span>
+            <h2>3月23日までまだ時間がある</h2>
+            <div id="countdown" class="timer"></div>
+            <div class="input-group">
+                <input type="password" id="passwordInput" placeholder="合言葉を入力してください">
+                <button onclick="checkAccess()">開ける</button>
+            </div>
+        </div>
+
+        <div id="content-wrapper">
+            <div id="content"></div>
+            <div id="final-heart">❤</div>
+        </div>
+    </div>
+
+    <script>
+        const targetDate = new Date('2026-03-23T00:00:00').getTime();
+        const correctPassword = "大好きだよ"; 
+        const synth = window.speechSynthesis;
+
+        function updateTimer() {
+            const now = new Date().getTime();
+            const diff = targetDate - now;
+            if (diff <= 0) {
+                document.getElementById('countdown').innerHTML = "お誕生日おめでとう！";
+                return true;
+            }
+            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+            const secs = Math.floor((diff % (1000 * 60)) / 1000);
+            document.getElementById('countdown').innerHTML = `${days}日 ${hours}時間 ${mins}分 ${secs}秒`;
+            return false;
+        }
+        setInterval(updateTimer, 1000);
+
+        function checkAccess() {
+            const pass = document.getElementById('passwordInput').value;
+            const isTimeReady = updateTimer();
+            if (pass === correctPassword || isTimeReady) {
+                document.getElementById('lock-screen').style.display = 'none';
+                document.getElementById('content-wrapper').style.display = 'block';
+                speakText(); 
+                startStory();
+            } else {
+                alert("合言葉が違います");
+            }
+        }
+
+        const text = `君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\nでも君は言ったね、僕は優しいって。\n君は言ったね、僕と一緒にいて幸せだって。\nそれでも君は言ったんだ、「友達のままでいよう」って\n\n眠れない、ずっと眠れない夜\n電話したいけど、たぶん我慢するよ\n君の元カレも今の彼も理解できない\nどうしてまだ君を愛しているのかもわからない\nまだ君を愛してる\n\nどこにいるの？元気なの？一言でもいいから書いて\n誰といるの？誰がそばにいるの？ただ元気でいて\nもうメッセージは送らないよ\n言いたかったことは全部言ったから\n手はスマホのそばにあるけれど...\n\n君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ\n\nどんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ\n\n君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\n頭から離れない人と、どうやって友達でいられるの？\nこの想いを忘れることはできない、とても苦しいんだ...\n本当の友達のように話そう\n「もしもし、元気？最近どう？」\n君がメッセージをくれてから、何も変わっていないよ\n\nまだ君を愛してる\nまだ君を愛してる\nこの想いを、心から消すことはできない。`;
+
+        function speakText() {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'ja-JP'; 
+            utterance.rate = 0.9;  // Естественная скорость
+            utterance.pitch = 1.1; // Сделал голос чуть выше, чтобы он звучал моложе
+
+            const voices = synth.getVoices();
+            const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.toLowerCase().includes('male') || v.name.includes('Keita') || v.name.includes('Ichiro')));
+            if (maleVoice) utterance.voice = maleVoice;
+            
+            synth.speak(utterance);
+        }
+
+        function startStory() {
+            const contentDiv = document.getElementById('content');
+            let i = 0;
+            const triggerPhrase = "お腹の中に蝶が舞う"; 
+            function typeWriter() {
+                if (i < text.length) {
+                    contentDiv.textContent += text.charAt(i);
+                    if (contentDiv.textContent.endsWith(triggerPhrase)) {
+                        createButterflies();
+                    }
+                    i++;
+                    setTimeout(typeWriter, 180); // Наша скорость
+                } else {
+                    document.getElementById('final-heart').style.display = 'block';
+                }
+            }
+            typeWriter();
+        }
+
+        function createButterflies() {
+            for(let k=0; k<30; k++) { 
+                const b = document.createElement('div');
+                b.className = 'butterfly';
+                b.innerHTML = '🦋';
+                b.style.left = Math.random() * 100 + 'vw';
+                b.style.top = Math.random() * 100 + 'vh';
+                b.style.setProperty('--x', (Math.random() * 600 - 300) + 'px');
+                b.style.setProperty('--y', (Math.random() * 600 - 300) + 'px');
+                document.body.appendChild(b);
+                setTimeout(() => b.remove(), 4000);
+            }
+        }
+
+        window.speechSynthesis.onvoiceschanged = function() {
+            window.speechSynthesis.getVoices();
+        };
+    </script>
+</body>
+</html>
