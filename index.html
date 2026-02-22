@@ -5,8 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Misora</title>
     <style>
+        :root {
+            --bg-color: rgba(0, 0, 0, 0.85);
+            --accent-color: #ff4b2b;
+        }
+
         body {
-            background: #050505 url('moon.jpg') no-repeat center center fixed;
+            background: url('moon.jpg') no-repeat center center fixed;
             background-size: cover;
             color: #e0e0e0;
             font-family: 'Helvetica Neue', Arial, sans-serif;
@@ -15,158 +20,141 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden; /* Чтобы снег не создавал прокрутку */
+            overflow: hidden;
         }
 
-        /* Эффект падающего снега */
-        .snowflake {
-            position: absolute;
-            top: -10px;
-            color: white;
-            user-select: none;
-            z-index: 1;
-            pointer-events: none;
-            animation: fall linear infinite;
-        }
-
-        @keyframes fall {
-            to { transform: translateY(105vh); }
-        }
-
-        .glass-panel {
-            background: rgba(0, 0, 0, 0.75);
+        /* Экран блокировки */
+        #lock-screen {
+            background: var(--bg-color);
             padding: 40px;
-            border-radius: 25px;
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
+            border-radius: 20px;
+            backdrop-filter: blur(10px);
             text-align: center;
-            box-shadow: 0 0 50px rgba(0,0,0,0.8);
-            width: 85%;
-            max-width: 600px;
             z-index: 10;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
-        .moon-icon {
-            font-size: 3.5rem;
-            filter: drop-shadow(0 0 20px #fff);
-            margin-bottom: 20px;
-            display: block;
-        }
+        .timer { font-size: 1.6rem; color: var(--accent-color); margin: 15px 0; font-weight: bold; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1e26; color: white; text-align: center; }
+        button { padding: 12px 25px; background: var(--accent-color); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        #lock-screen { display: block; }
-        #content-wrapper { display: none; }
-
-        .input-group { margin: 25px 0; }
-        
-        input {
-            padding: 15px;
-            border-radius: 12px;
-            border: 1px solid #555;
-            background: rgba(26, 30, 38, 0.8);
-            color: white;
-            text-align: center;
-            width: 250px;
-            font-size: 1rem;
-            outline: none;
-        }
-
-        button {
-            padding: 15px 30px;
-            background: linear-gradient(45deg, #ff4b2b, #ff416c);
-            border: none;
-            color: white;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: 0.3s;
-            box-shadow: 0 4px 15px rgba(255, 75, 43, 0.4);
-        }
-
-        button:hover { transform: scale(1.05); }
-
-        #content {
-            white-space: pre-wrap;
-            line-height: 2.2;
-            font-size: 1.1rem;
-            text-align: left;
-            opacity: 0;
-            transition: opacity 2s;
-        }
-
-        .butterfly {
-            position: fixed;
-            font-size: 2rem;
-            pointer-events: none;
-            animation: fly 5s linear forwards;
-            z-index: 100;
-        }
-
-        @keyframes fly {
-            0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; }
-            100% { transform: translate(var(--x), var(--y)) rotate(720deg) scale(0); opacity: 0; }
-        }
-
-        #final-heart {
-            font-size: 5rem;
-            color: #ff4b2b;
+        /* Конверт */
+        .envelope-wrapper {
             display: none;
-            margin-top: 30px;
-            animation: pulse 2s infinite;
+            position: relative;
+            width: 300px;
+            height: 200px;
+            background: #f3f3f3;
+            margin-top: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); opacity: 0.8; }
-            50% { transform: scale(1.2); opacity: 1; }
+        .envelope-wrapper::before {
+            content: '';
+            position: absolute;
+            top: 0; z-index: 2;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 100px solid #dcdcdc;
+            transform-origin: top;
+            transition: transform 1s 0.5s;
         }
 
-        .timer { font-size: 1.5rem; color: #ff4b2b; margin-top: 15px; font-weight: 300; letter-spacing: 2px; }
+        .envelope-wrapper.open::before { transform: rotateX(180deg); }
+
+        /* Письмо/Открытка */
+        .letter {
+            position: absolute;
+            bottom: 0; left: 10px;
+            width: 280px;
+            height: 180px;
+            background: white;
+            color: #333;
+            padding: 20px;
+            box-sizing: border-box;
+            transition: transform 1.5s 1.5s, height 1.5s 1.5s, width 1.5s 1.5s;
+            overflow-y: auto;
+            z-index: 1;
+            font-size: 0.9rem;
+            line-height: 1.6;
+        }
+
+        .envelope-wrapper.open .letter {
+            transform: translateY(-100px);
+            height: 450px;
+            width: 350px;
+            left: -25px;
+            z-index: 3;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+        }
+
+        .heart { color: var(--accent-color); font-size: 2rem; margin-top: 10px; }
     </style>
 </head>
 <body>
 
-    <audio id="bgMusic" loop>
-        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
-    </audio>
-
-    <div class="glass-panel">
-        <div id="lock-screen">
-            <span class="moon-icon">🌕</span>
-            <h2 style="font-weight: 300;">3月23日まであと...</h2>
-            <div id="countdown" class="timer"></div>
-            <div class="input-group">
-                <input type="password" id="passwordInput" placeholder="合言葉を入力してください">
-                <br><br>
-                <button onclick="checkAccess()">開ける</button>
-            </div>
-        </div>
-
-        <div id="content-wrapper">
-            <div id="content"></div>
-            <div id="final-heart">❤</div>
+    <div id="lock-screen">
+        <h2 style="font-size: 3rem; margin: 0;">🌕</h2>
+        <h2>3月23日までまだ時間がある</h2>
+        <div id="countdown" class="timer"></div>
+        <div class="input-group">
+            <input type="password" id="passwordInput" placeholder="合言葉を入力してください">
+            <button onclick="checkAccess()">開ける</button>
         </div>
     </div>
 
-    <script>
-        // Эффект снега
-        function createSnow() {
-            const container = document.body;
-            for (let i = 0; i < 50; i++) {
-                const flake = document.createElement('div');
-                flake.className = 'snowflake';
-                flake.innerHTML = '•';
-                flake.style.left = Math.random() * 100 + 'vw';
-                flake.style.opacity = Math.random();
-                flake.style.fontSize = (Math.random() * 10 + 10) + 'px';
-                flake.style.animationDuration = (Math.random() * 10 + 5) + 's';
-                flake.style.animationDelay = Math.random() * 5 + 's';
-                container.appendChild(flake);
-            }
-        }
-        createSnow();
+    <div class="envelope-wrapper" id="envelope">
+        <div class="letter" id="letter-content">
+            </div>
+    </div>
 
+    <script>
         const targetDate = new Date('2026-03-23T00:00:00').getTime();
-        const correctPassword = "大好きだよ"; 
+        const correctPassword = "大好きだよ";
+        const synth = window.speechSynthesis;
+
+        const songText = `君の体のすべてが
+僕たちの間の何キロもの距離になる
+ずっと聞きたかったあの三つの言葉を言って...
+「愛してる」
+愛してる
+愛してる
+
+でも君は言ったね、僕は優しいって。
+君は言ったね、僕と一緒にいて幸せだって。
+それでも君は言ったんだ、「友達のままでいよう」って
+
+眠れない、ずっと眠れない夜
+電話したいけど、たぶん我慢するよ
+君の元カレも今の彼も理解できない
+どうしてまだ君を愛しているのかもわからない
+まだ君を愛してる
+
+どこにいるの？元気なの？一言でもいいから書いて
+誰といるの？誰がそばにいるの？ただ元気でいて
+もうメッセージは送らないよ
+言いたかったことは全部言ったから
+手はスマホのそばにあるけれど...
+
+君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ
+
+どんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ
+
+君の体のすべてが
+僕たちの間の何キロもの距離になる
+ずっと聞きたかったあの三つの言葉を言って...
+「愛してる」
+愛してる
+愛してる
+
+頭から離れない人と、どうやって友達でいられるの？
+この想いを忘れることはできない、とても苦しいんだ...
+本当の友達のように話そう
+「もしもし、元気？最近どう？」
+君がメッセージをくれてから、何も変わっていないよ
+
+まだ君を愛してる
+まだ君を愛してる
+この想いを、心から消すことはできない。`;
 
         function updateTimer() {
             const now = new Date().getTime();
@@ -179,74 +167,42 @@
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const secs = Math.floor((diff % (1000 * 60)) / 1000);
-            document.getElementById('countdown').innerHTML = `${days}d ${hours}h ${mins}m ${secs}s`;
+            document.getElementById('countdown').innerHTML = `${days}日 ${hours}時間 ${mins}分 ${secs}秒`;
             return false;
         }
         setInterval(updateTimer, 1000);
 
         function checkAccess() {
             const pass = document.getElementById('passwordInput').value;
-            const isTimeReady = updateTimer();
-            if (pass === correctPassword || isTimeReady) {
-                // Запуск музыки
-                const music = document.getElementById('bgMusic');
-                music.volume = 0.3;
-                music.play();
-
+            if (pass === correctPassword || updateTimer()) {
                 document.getElementById('lock-screen').style.display = 'none';
-                document.getElementById('content-wrapper').style.display = 'block';
-                document.getElementById('content').style.opacity = '1';
+                const env = document.getElementById('envelope');
+                env.style.display = 'block';
+                document.getElementById('letter-content').innerText = songText;
                 
-                speakText(); 
-                startStory();
+                setTimeout(() => {
+                    env.classList.add('open');
+                    speakText();
+                }, 100);
             } else {
                 alert("合言葉が違います");
             }
         }
 
-        const text = `君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\nでも君は言ったね、僕は優しいって。\n君は言ったね、僕と一緒にいて幸せだって。\nそれでも君は言ったんだ、「友達のままでいよう」って\n\n眠れない、ずっと眠れない夜\n電話したいけど、たぶん我慢するよ\n君の元カレも今の彼も理解できない\nどうしてまだ君を愛しているのかもわからない\nまだ君を愛してる\n\nどこにいるの？元気なの？一言でもいいから書いて\n誰といるの？誰がそばにいるの？ただ元気でいて\nもうメッセージは送らないよ\n言いたかったことは全部言ったから\n手はスマホのそばにあるけれど...\n\n君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ\n\nどんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ\n\n君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\n頭から離れない人と、どうやって友達でいられるの？\nこの想いを忘れることはできない、とても苦しいんだ...\n本当の友達のように話そう\n「もしもし、元気？最近どう？」\n君がメッセージをくれてから、何も変わっていないよ\n\nまだ君を愛してる\nまだ君を愛してる\nこの想いを、心から消すことはできない。`;
-
         function speakText() {
-            const synth = window.speechSynthesis;
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'ja-JP'; 
-            utterance.rate = 0.85; 
-            utterance.pitch = 1.0;
+            const utterance = new SpeechSynthesisUtterance(songText);
+            utterance.lang = 'ja-JP';
+            utterance.rate = 0.9;
+            utterance.pitch = 1.05;
+
+            const voices = synth.getVoices();
+            const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.includes('Keita') || v.name.includes('Male') || v.name.includes('Ichiro')));
+            if (maleVoice) utterance.voice = maleVoice;
+            
             synth.speak(utterance);
         }
 
-        function startStory() {
-            const contentDiv = document.getElementById('content');
-            let i = 0;
-            const triggerPhrase = "お腹の中に蝶が舞う"; 
-            function typeWriter() {
-                if (i < text.length) {
-                    contentDiv.textContent += text.charAt(i);
-                    if (contentDiv.textContent.endsWith(triggerPhrase)) {
-                        createButterflies();
-                    }
-                    i++;
-                    setTimeout(typeWriter, 120); 
-                } else {
-                    document.getElementById('final-heart').style.display = 'inline-block';
-                }
-            }
-            typeWriter();
-        }
-
-        function createButterflies() {
-            for(let k=0; k<25; k++) { 
-                const b = document.createElement('div');
-                b.className = 'butterfly';
-                b.innerHTML = '🦋';
-                b.style.left = '50%';
-                b.style.top = '50%';
-                b.style.setProperty('--x', (Math.random() * 800 - 400) + 'px');
-                b.style.setProperty('--y', (Math.random() * 800 - 400) + 'px');
-                document.body.appendChild(b);
-                setTimeout(() => b.remove(), 5000);
-            }
-        }
+        window.speechSynthesis.onvoiceschanged = () => synth.getVoices();
     </script>
 </body>
 </html>
