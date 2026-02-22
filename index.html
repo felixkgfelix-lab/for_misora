@@ -15,10 +15,9 @@
             justify-content: center;
             min-height: 100vh;
             margin: 0;
-            overflow: hidden;
+            overflow-x: hidden;
         }
 
-        /* Один четкий темный блок для пароля */
         #lock-screen {
             background: rgba(0, 0, 0, 0.85);
             padding: 40px;
@@ -26,44 +25,37 @@
             backdrop-filter: blur(10px);
             text-align: center;
             z-index: 100;
-            box-shadow: 0 0 30px rgba(0,0,0,0.7);
         }
 
         .timer { font-size: 1.6rem; color: #ff4b2b; margin: 15px 0; font-weight: bold; }
-        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1e26; color: white; text-align: center; }
-        button { padding: 12px 25px; background: #ff4b2b; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1e26; color: white; text-align: center; margin-bottom: 10px; width: 200px; }
+        .btn { padding: 12px 25px; background: #ff4b2b; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; }
 
-        /* Открытка, которая появится сразу и будет работать везде */
         #card-wrapper {
             display: none;
             background: #fffafa;
             color: #2c3e50;
-            width: 90%;
+            width: 85%;
             max-width: 450px;
-            height: 80vh;
+            max-height: 80vh;
             padding: 30px;
             border-radius: 15px;
             box-shadow: 0 10px 40px rgba(0,0,0,0.5);
             position: relative;
             z-index: 50;
             overflow-y: auto;
-            text-align: left;
-            animation: fadeIn 1s ease-in;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .heart-seal { font-size: 2.5rem; color: #ff4b2b; text-align: center; display: block; margin-bottom: 20px; }
-        #content { white-space: pre-wrap; line-height: 2; font-size: 1.1rem; }
+        .heart-seal { font-size: 3rem; color: #ff4b2b; text-align: center; display: block; margin-bottom: 20px; }
+        #content { white-space: pre-wrap; line-height: 1.8; font-size: 1.05rem; display: none; }
+        
+        #start-reading-btn { margin: 20px auto; display: block; }
 
         .butterfly {
             position: fixed;
             font-size: 2rem;
             pointer-events: none;
-            z-index: 10;
+            z-index: 1000;
             animation: fly 5s ease-out forwards;
         }
 
@@ -81,12 +73,14 @@
         <div id="countdown" class="timer"></div>
         <div class="input-group">
             <input type="password" id="passwordInput" placeholder="合言葉を入力してください">
-            <button onclick="checkAccess()">開ける</button>
+            <br>
+            <button class="btn" onclick="checkAccess()">開ける</button>
         </div>
     </div>
 
     <div id="card-wrapper">
         <span class="heart-seal">❤</span>
+        <button id="start-reading-btn" class="btn" onclick="startLetter()">手紙を読む</button>
         <div id="content"></div>
     </div>
 
@@ -158,23 +152,33 @@
             if (pass === correctPassword || updateTimer()) {
                 document.getElementById('lock-screen').style.display = 'none';
                 document.getElementById('card-wrapper').style.display = 'block';
-                document.getElementById('content').innerText = songText;
-                speakText();
-                createButterflies();
             } else {
                 alert("合言葉が違います");
             }
         }
 
+        function startLetter() {
+            document.getElementById('start-reading-btn').style.display = 'none';
+            const contentDiv = document.getElementById('content');
+            contentDiv.style.display = 'block';
+            contentDiv.innerText = songText;
+            
+            speakText();
+            createButterflies();
+        }
+
         function speakText() {
-            const synth = window.speechSynthesis;
+            window.speechSynthesis.cancel(); // Сброс предыдущих очередей
             const utterance = new SpeechSynthesisUtterance(songText);
             utterance.lang = 'ja-JP';
             utterance.rate = 0.85;
-            const voices = synth.getVoices();
-            const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.includes('Male') || v.name.includes('Keita')));
+            utterance.pitch = 1.0;
+            
+            const voices = window.speechSynthesis.getVoices();
+            const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.includes('Male') || v.name.includes('Keita') || v.name.includes('Ichiro')));
             if (maleVoice) utterance.voice = maleVoice;
-            synth.speak(utterance);
+            
+            window.speechSynthesis.speak(utterance);
         }
 
         function createButterflies() {
@@ -190,7 +194,12 @@
                 setTimeout(() => b.remove(), 5000);
             }
         }
-        window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
+        
+        // Попытка загрузить голоса заранее
+        window.speechSynthesis.getVoices();
+        if (window.speechSynthesis.onvoiceschanged !== undefined) {
+            window.speechSynthesis.onvoiceschanged = window.speechSynthesis.getVoices;
+        }
     </script>
 </body>
 </html>
