@@ -6,8 +6,8 @@
     <title>For Misora</title>
     <style>
         :root {
-            --bg-color: rgba(0, 0, 0, 0.85);
-            --accent-color: #ff4b2b;
+            --bg-glass: rgba(0, 0, 0, 0.85);
+            --accent: #ff4b2b;
         }
 
         body {
@@ -23,71 +23,100 @@
             overflow: hidden;
         }
 
-        /* Экран блокировки */
         #lock-screen {
-            background: var(--bg-color);
+            background: var(--bg-glass);
             padding: 40px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
             text-align: center;
-            z-index: 10;
+            z-index: 100;
         }
 
-        .timer { font-size: 1.6rem; color: var(--accent-color); margin: 15px 0; font-weight: bold; }
+        .timer { font-size: 1.6rem; color: var(--accent); margin: 15px 0; font-weight: bold; }
         input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1e26; color: white; text-align: center; }
-        button { padding: 12px 25px; background: var(--accent-color); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        button { padding: 12px 25px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        /* Конверт */
+        /* Конверт опущен ниже */
         .envelope-wrapper {
             display: none;
             position: relative;
-            width: 300px;
-            height: 200px;
-            background: #f3f3f3;
-            margin-top: 50px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            width: 350px;
+            height: 230px;
+            background: #e0e0e0;
+            margin-top: 100px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            cursor: pointer;
         }
 
+        /* Клапан конверта */
         .envelope-wrapper::before {
             content: '';
             position: absolute;
-            top: 0; z-index: 2;
-            border-left: 150px solid transparent;
-            border-right: 150px solid transparent;
-            border-top: 100px solid #dcdcdc;
+            top: 0; z-index: 4;
+            border-left: 175px solid transparent;
+            border-right: 175px solid transparent;
+            border-top: 115px solid #cfcfcf;
             transform-origin: top;
             transition: transform 1s 0.5s;
         }
 
-        .envelope-wrapper.open::before { transform: rotateX(180deg); }
+        .envelope-wrapper.open::before { transform: rotateX(180deg); z-index: 0; }
 
-        /* Письмо/Открытка */
+        /* Красивая открытка */
         .letter {
             position: absolute;
-            bottom: 0; left: 10px;
-            width: 280px;
-            height: 180px;
-            background: white;
-            color: #333;
-            padding: 20px;
+            bottom: 5px; left: 10px;
+            width: 330px;
+            height: 210px;
+            background: #fffafa;
+            color: #2c3e50;
+            padding: 25px;
             box-sizing: border-box;
-            transition: transform 1.5s 1.5s, height 1.5s 1.5s, width 1.5s 1.5s;
+            transition: transform 1.5s 1.2s, height 1.5s 1.2s, width 1.5s 1.2s, left 1.5s 1.2s;
             overflow-y: auto;
-            z-index: 1;
-            font-size: 0.9rem;
-            line-height: 1.6;
+            z-index: 2;
+            font-size: 1rem;
+            line-height: 1.8;
+            border: 1px solid #eee;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
         }
 
         .envelope-wrapper.open .letter {
-            transform: translateY(-100px);
-            height: 450px;
-            width: 350px;
+            transform: translateY(-150px);
+            height: 500px;
+            width: 400px;
             left: -25px;
-            z-index: 3;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.3);
+            z-index: 5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
         }
 
-        .heart { color: var(--accent-color); font-size: 2rem; margin-top: 10px; }
+        /* Сердце-печать */
+        .heart-seal {
+            position: absolute;
+            top: 40%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 3rem;
+            color: var(--accent);
+            z-index: 6;
+            transition: opacity 0.5s;
+            filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3));
+        }
+
+        .envelope-wrapper.open .heart-seal { opacity: 0; pointer-events: none; }
+
+        /* Бабочки */
+        .butterfly {
+            position: fixed;
+            font-size: 2rem;
+            pointer-events: none;
+            z-index: 200;
+            animation: fly 4s ease-out forwards;
+        }
+
+        @keyframes fly {
+            0% { transform: translate(0,0) scale(1); opacity: 1; }
+            100% { transform: translate(var(--x), var(--y)) rotate(360deg) scale(0); opacity: 0; }
+        }
     </style>
 </head>
 <body>
@@ -103,58 +132,14 @@
     </div>
 
     <div class="envelope-wrapper" id="envelope">
-        <div class="letter" id="letter-content">
-            </div>
+        <div class="heart-seal">❤</div>
+        <div class="letter" id="letter-content"></div>
     </div>
 
     <script>
         const targetDate = new Date('2026-03-23T00:00:00').getTime();
         const correctPassword = "大好きだよ";
-        const synth = window.speechSynthesis;
-
-        const songText = `君の体のすべてが
-僕たちの間の何キロもの距離になる
-ずっと聞きたかったあの三つの言葉を言って...
-「愛してる」
-愛してる
-愛してる
-
-でも君は言ったね、僕は優しいって。
-君は言ったね、僕と一緒にいて幸せだって。
-それでも君は言ったんだ、「友達のままでいよう」って
-
-眠れない、ずっと眠れない夜
-電話したいけど、たぶん我慢するよ
-君の元カレも今の彼も理解できない
-どうしてまだ君を愛しているのかもわからない
-まだ君を愛してる
-
-どこにいるの？元気なの？一言でもいいから書いて
-誰といるの？誰がそばにいるの？ただ元気でいて
-もうメッセージは送らないよ
-言いたかったことは全部言ったから
-手はスマホのそばにあるけれど...
-
-君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ
-
-どんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ
-
-君の体のすべてが
-僕たちの間の何キロもの距離になる
-ずっと聞きたかったあの三つの言葉を言って...
-「愛してる」
-愛してる
-愛してる
-
-頭から離れない人と、どうやって友達でいられるの？
-この想いを忘れることはできない、とても苦しいんだ...
-本当の友達のように話そう
-「もしもし、元気？最近どう？」
-君がメッセージをくれてから、何も変わっていないよ
-
-まだ君を愛してる
-まだ君を愛してる
-この想いを、心から消すことはできない。`;
+        const songText = `君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\nでも君は言ったね、僕は優しいって。\n君は言ったね、僕と一緒にいて幸せだって。\nそれでも君は言ったんだ、「友達のままでいよう」って\n\n眠れない、ずっと眠れない夜\n電話したいけど、たぶん我慢するよ\n君の元カレも今の彼も理解できない\nどうしてまだ君を愛しているのかもわからない\nまだ君を愛してる\n\nどこにいるの？元気なの？一言でもいいから書いて\n誰といるの？誰がそばにいるの？ただ元気でいて\nもうメッセージは送らないよ\n言いたかったことは全部言ったから\n手はスマホ의そばにあるけれど...\n\n君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ\n\nどんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ\n\n君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\n頭から離れない人と、どうやって友達でいられるの？\nこの想いを忘れることはできない、とても苦しいんだ...\n本当の友達のように話そう\n「もしもし、元気？最近どう？」\n君がメッセージをくれてから、何も変わっていないよ\n\nまだ君を愛してる\nまだ君を愛してる\nこの想いを、心から消すことはできない。`;
 
         function updateTimer() {
             const now = new Date().getTime();
@@ -183,6 +168,7 @@
                 setTimeout(() => {
                     env.classList.add('open');
                     speakText();
+                    createButterflies();
                 }, 100);
             } else {
                 alert("合言葉が違います");
@@ -190,19 +176,30 @@
         }
 
         function speakText() {
+            const synth = window.speechSynthesis;
             const utterance = new SpeechSynthesisUtterance(songText);
             utterance.lang = 'ja-JP';
-            utterance.rate = 0.9;
-            utterance.pitch = 1.05;
-
+            utterance.rate = 0.85;
+            utterance.pitch = 1.0;
             const voices = synth.getVoices();
             const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.includes('Keita') || v.name.includes('Male') || v.name.includes('Ichiro')));
             if (maleVoice) utterance.voice = maleVoice;
-            
             synth.speak(utterance);
         }
 
-        window.speechSynthesis.onvoiceschanged = () => synth.getVoices();
+        function createButterflies() {
+            for(let i=0; i<25; i++) {
+                const b = document.createElement('div');
+                b.className = 'butterfly';
+                b.innerHTML = '🦋';
+                b.style.left = '50vw';
+                b.style.top = '50vh';
+                b.style.setProperty('--x', (Math.random() * 800 - 400) + 'px');
+                b.style.setProperty('--y', (Math.random() * 800 - 400) + 'px');
+                document.body.appendChild(b);
+                setTimeout(() => b.remove(), 4000);
+            }
+        }
     </script>
 </body>
 </html>
