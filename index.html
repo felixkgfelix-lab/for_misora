@@ -5,11 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>For Misora</title>
     <style>
-        :root {
-            --bg-glass: rgba(0, 0, 0, 0.85);
-            --accent: #ff4b2b;
-        }
-
         body {
             background: url('moon.jpg') no-repeat center center fixed;
             background-size: cover;
@@ -21,93 +16,55 @@
             min-height: 100vh;
             margin: 0;
             overflow: hidden;
-            touch-action: manipulation;
         }
 
+        /* Один четкий темный блок для пароля */
         #lock-screen {
-            background: var(--bg-glass);
-            padding: 25px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 40px;
             border-radius: 20px;
             backdrop-filter: blur(10px);
             text-align: center;
             z-index: 100;
-            width: 80%;
-            max-width: 300px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.7);
         }
 
-        .timer { font-size: 1.2rem; color: var(--accent); margin: 15px 0; font-weight: bold; }
-        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1e26; color: white; text-align: center; width: 100%; box-sizing: border-box; margin-bottom: 10px; }
-        button { width: 100%; padding: 12px; background: var(--accent); border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .timer { font-size: 1.6rem; color: #ff4b2b; margin: 15px 0; font-weight: bold; }
+        input { padding: 12px; border-radius: 8px; border: 1px solid #444; background: #1a1e26; color: white; text-align: center; }
+        button { padding: 12px 25px; background: #ff4b2b; border: none; color: white; border-radius: 8px; cursor: pointer; font-weight: bold; }
 
-        /* Конверт под размер смартфона */
-        .envelope-wrapper {
+        /* Открытка, которая появится сразу и будет работать везде */
+        #card-wrapper {
             display: none;
-            position: relative;
-            width: 280px;
-            height: 180px;
-            background: #e0e0e0;
-            margin-top: 120px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.6);
-        }
-
-        .envelope-wrapper::before {
-            content: '';
-            position: absolute;
-            top: 0; z-index: 4;
-            border-left: 140px solid transparent;
-            border-right: 140px solid transparent;
-            border-top: 90px solid #cfcfcf;
-            transform-origin: top;
-            transition: transform 1s 0.5s;
-        }
-
-        .envelope-wrapper.open::before { transform: rotateX(180deg); z-index: 0; }
-
-        /* Открытка под размер смартфона */
-        .letter {
-            position: absolute;
-            bottom: 5px; left: 10px;
-            width: 260px;
-            height: 160px;
             background: #fffafa;
             color: #2c3e50;
-            padding: 15px;
-            box-sizing: border-box;
-            transition: transform 1.5s 1.2s, height 1.5s 1.2s, width 1.5s 1.2s, left 1.5s 1.2s;
+            width: 90%;
+            max-width: 450px;
+            height: 80vh;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+            position: relative;
+            z-index: 50;
             overflow-y: auto;
-            z-index: 2;
-            font-size: 0.9rem;
-            line-height: 1.6;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+            text-align: left;
+            animation: fadeIn 1s ease-in;
         }
 
-        .envelope-wrapper.open .letter {
-            transform: translateY(-130px);
-            height: 380px;
-            width: 280px;
-            left: 0px;
-            z-index: 5;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .heart-seal {
-            position: absolute;
-            top: 40%; left: 50%;
-            transform: translate(-50%, -50%);
-            font-size: 2.5rem;
-            color: var(--accent);
-            z-index: 6;
-            transition: opacity 0.5s;
-        }
-
-        .envelope-wrapper.open .heart-seal { opacity: 0; }
+        .heart-seal { font-size: 2.5rem; color: #ff4b2b; text-align: center; display: block; margin-bottom: 20px; }
+        #content { white-space: pre-wrap; line-height: 2; font-size: 1.1rem; }
 
         .butterfly {
             position: fixed;
-            font-size: 1.5rem;
+            font-size: 2rem;
             pointer-events: none;
-            z-index: 200;
-            animation: fly 4s ease-out forwards;
+            z-index: 10;
+            animation: fly 5s ease-out forwards;
         }
 
         @keyframes fly {
@@ -119,8 +76,8 @@
 <body>
 
     <div id="lock-screen">
-        <h2 style="font-size: 2.5rem; margin: 0;">🌕</h2>
-        <h2 style="font-size: 1.1rem;">3月23日までまだ時間がある</h2>
+        <h2 style="font-size: 3rem; margin: 0;">🌕</h2>
+        <h2>3月23日までまだ時間がある</h2>
         <div id="countdown" class="timer"></div>
         <div class="input-group">
             <input type="password" id="passwordInput" placeholder="合言葉を入力してください">
@@ -128,15 +85,57 @@
         </div>
     </div>
 
-    <div class="envelope-wrapper" id="envelope">
-        <div class="heart-seal">❤</div>
-        <div class="letter" id="letter-content"></div>
+    <div id="card-wrapper">
+        <span class="heart-seal">❤</span>
+        <div id="content"></div>
     </div>
 
     <script>
         const targetDate = new Date('2026-03-23T00:00:00').getTime();
         const correctPassword = "大好きだよ";
-        const songText = `君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\nでも君は言ったね、僕は優しいって。\n君は言ったね、僕と一緒にいて幸せだって。\nそれでも君は言ったんだ、「友達のままでいよう」って\n\n眠れない、ずっと眠れない夜\n電話したいけど、たぶん我慢するよ\n君の元カレも今の彼も理解できない\nどうしてまだ君を愛しているのかもわからない\nまだ君を愛してる\n\nどこにいるの？元気なの？一言でもいいから書いて\n誰といるの？誰がそばにいるの？ただ元気でいて\nもうメッセージは送らないよ\n言いたかったことは全部言ったから\n手はスマホのそばにあるけれど...\n\n君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ\n\nどんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ\n\n君の体のすべてが\n僕たちの間の何キロもの距離になる\nずっと聞きたかったあの三つの言葉を言って...\n「愛してる」\n愛してる\n愛してる\n\n頭から離れない人と、どうやって友達でいられるの？\nこの想いを忘れることはできない、とても苦しいんだ...\n本当の友達のように話そう\n「もしもし、元気？最近どう？」\n君がメッセージをくれてから、何も変わっていないよ\n\nまだ君を愛してる\nまだ君を愛してる\nこの想いを、心から消すことはできない。`;
+        const songText = `君の体のすべてが
+僕たちの間の何キロもの距離になる
+ずっと聞きたかったあの三つの言葉を言って...
+「愛してる」
+愛してる
+愛してる
+
+でも君は言ったね、僕は優しいって。
+君は言ったね、僕と一緒にいて幸せだって。
+それでも君は言ったんだ、「友達のままでいよう」って
+
+眠れない、ずっと眠れない夜
+電話したいけど、たぶん我慢するよ
+君の元カレも今の彼も理解できない
+どうしてまだ君を愛しているのかもわからない
+まだ君を愛してる
+
+どこにいるの？元気なの？一言でもいいから書いて
+誰といるの？誰がそばにいるの？ただ元気でいて
+もうメッセージは送らないよ
+言いたかったことは全部言ったから
+手はスマホのそばにあるけれど...
+
+君からメッセージが届くたびに、お腹の中に蝶が舞うような気持ちになるんだ
+
+どんな答えでも受け入れると言ったけれど、それでも心はそれをしたくないんだ
+
+君の体のすべてが
+僕たちの間の何キロもの距離になる
+ずっと聞きたかったあの三つの言葉を言って...
+「愛してる」
+愛してる
+愛してる
+
+頭から離れない人と、どうやって友達でいられるの？
+この想いを忘れることはできない、とても苦しいんだ...
+本当の友達のように話そう
+「もしもし、元気？最近どう？」
+君がメッセージをくれてから、何も変わっていないよ
+
+まだ君を愛してる
+まだ君を愛してる
+この想いを、心から消すことはできない。`;
 
         function updateTimer() {
             const now = new Date().getTime();
@@ -149,7 +148,7 @@
             const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const secs = Math.floor((diff % (1000 * 60)) / 1000);
-            document.getElementById('countdown').innerHTML = `${days}日 ${hours}h ${mins}m ${secs}s`;
+            document.getElementById('countdown').innerHTML = `${days}日 ${hours}時間 ${mins}分 ${secs}秒`;
             return false;
         }
         setInterval(updateTimer, 1000);
@@ -158,17 +157,10 @@
             const pass = document.getElementById('passwordInput').value;
             if (pass === correctPassword || updateTimer()) {
                 document.getElementById('lock-screen').style.display = 'none';
-                const env = document.getElementById('envelope');
-                env.style.display = 'block';
-                document.getElementById('letter-content').innerText = songText;
-                
-                // Инициализация голоса для смартфонов
-                speakText(); 
-
-                setTimeout(() => {
-                    env.classList.add('open');
-                    createButterflies();
-                }, 100);
+                document.getElementById('card-wrapper').style.display = 'block';
+                document.getElementById('content').innerText = songText;
+                speakText();
+                createButterflies();
             } else {
                 alert("合言葉が違います");
             }
@@ -176,33 +168,28 @@
 
         function speakText() {
             const synth = window.speechSynthesis;
-            synth.cancel(); // Очистить очередь
             const utterance = new SpeechSynthesisUtterance(songText);
             utterance.lang = 'ja-JP';
             utterance.rate = 0.85;
-            
             const voices = synth.getVoices();
-            const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.includes('Male') || v.name.includes('Keita') || v.name.includes('Ichiro')));
+            const maleVoice = voices.find(v => v.lang === 'ja-JP' && (v.name.includes('Male') || v.name.includes('Keita')));
             if (maleVoice) utterance.voice = maleVoice;
-            
             synth.speak(utterance);
         }
 
         function createButterflies() {
-            for(let i=0; i<15; i++) {
+            for(let i=0; i<20; i++) {
                 const b = document.createElement('div');
                 b.className = 'butterfly';
                 b.innerHTML = '🦋';
                 b.style.left = '50vw';
-                b.style.top = '60vh';
-                b.style.setProperty('--x', (Math.random() * 400 - 200) + 'px');
-                b.style.setProperty('--y', (Math.random() * -500) + 'px');
+                b.style.top = '50vh';
+                b.style.setProperty('--x', (Math.random() * 800 - 400) + 'px');
+                b.style.setProperty('--y', (Math.random() * 800 - 400) + 'px');
                 document.body.appendChild(b);
-                setTimeout(() => b.remove(), 4000);
+                setTimeout(() => b.remove(), 5000);
             }
         }
-
-        // Загрузка голосов
         window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
     </script>
 </body>
